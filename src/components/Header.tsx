@@ -18,7 +18,7 @@ const Header = () => {
   // Conteúdo que deve ir para a esquerda (START)
   const startContent = (
     // Colocamos o nome da aplicação ou um logo aqui
-    <h1 className="text-xl font-bold text-white">PCA</h1>
+    <h1 className="text-xl font-bold text-white">PREFEITURA DE CAMPINA GRANDE</h1>
   );
 
   // Conteúdo que deve ir para a direita (END)
