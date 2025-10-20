@@ -1,103 +1,95 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card } from 'primereact/card';
+import { InputText } from 'primereact/inputtext';
+import { Button } from 'primereact/button';
+import { Password } from 'primereact/password'; // Componente de senha elegante
+import { classNames } from 'primereact/utils'; // Para classes dinâmicas
+
+export default function LoginPage() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    // Lógica de Autenticação de Teste
+    setTimeout(() => {
+      setLoading(false);
+      if (username === 'admin' && password === '123') {
+        alert('Login bem-sucedido!');
+        router.push('/home');
+      } else {
+        alert('Nome de usuário ou senha incorretos.');
+      }
+    }, 1500); // Simula um atraso de rede
+  };
+
+  // Título e Subtítulo do Card
+  const cardTitle = <h1 className="text-2xl font-bold">Acesso ao Sistema</h1>;
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    // Centraliza o formulário no meio da tela
+    <div className="flex justify-content-center align-items-center min-h-screen surface-ground">
+      
+      <Card title={cardTitle} className="md:w-30rem shadow-6 p-fluid">
+        
+        <form onSubmit={handleLogin} className="p-fluid">
+          
+          {/* CAMPO USUÁRIO */}
+          <div className="field mb-4">
+            <label htmlFor="username" className="font-semibold mb-2 block">
+              Usuário
+            </label>
+            <div className="p-inputgroup">
+              {/* Ícone dentro do campo */}
+              <span className="p-inputgroup-addon">
+                <i className="pi pi-user"></i>
+              </span>
+              <InputText 
+                id="username" 
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)} 
+                placeholder="Digite seu CPF"
+                required
+              />
+            </div>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+          {/* CAMPO SENHA */}
+          <div className="field mb-5">
+            <label htmlFor="password" className="font-semibold mb-2 block">
+              Senha
+            </label>
+            <Password 
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Digite sua senha"
+              toggleMask // Permite mostrar/esconder a senha
+              feedback={false} // Remove a barra de força da senha
+              className="w-full"
+              inputClassName="w-full"
+              required
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          </div>
+
+          {/* BOTÃO LOGIN */}
+          <Button 
+            label="Entrar" 
+            icon={classNames('pi', {'pi-spin pi-spinner': loading, 'pi-sign-in': !loading})}
+            type="submit" 
+            className="p-button-lg" 
+            disabled={loading}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          
+        </form>
+      </Card>
     </div>
   );
 }

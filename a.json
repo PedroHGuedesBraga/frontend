@@ -1,0 +1,44 @@
+{
+    "id": "f0f0ddf4-a57a-466e-ba41-7e968ffb97c4",
+    "nome": "Contrato de Fornecimento de Materiais Escolares",
+    "data": "2025-09-27",
+    "status": "ativo",
+    "aprovado": true,
+    "itensQuantidade": 50,
+    "secretaria": {
+        "id": "af1770b7-b1bd-45aa-bee3-a8961de79e2c",
+        "nome": "Secretaria de Educação"
+    },
+    "itens": [
+        {
+            "id": "c70b904b-6d68-4a27-a20b-b4cc8fa95582",
+            "nome": "Teste DE CONTRATO 1",
+            "descricao": "TESTE",
+            "quantidadeItem": 25,
+            "precoUnitario": 20,
+            "data": "2025-09-27",
+            "unidadeDeMedida": "un",
+            "aprovado": true
+        },
+        {
+            "id": "fb3f5aa6-4d07-4468-8ce4-ddddd9a19dab",
+            "nome": "Teste DE CONTRATO 2",
+            "descricao": "TESTE",
+            "quantidadeItem": 25,
+            "precoUnitario": 20,
+            "data": "2025-09-27",
+            "unidadeDeMedida": "un",
+            "aprovado": true
+        },
+        {
+            "id": "56384f1b-df6a-4cca-8f64-3933ac4ad124",
+            "nome": "Teste DE CONTRATO 3",
+            "descricao": "TESTE",
+            "quantidadeItem": 25,
+            "precoUnitario": 20,
+            "data": "2025-09-27",
+            "unidadeDeMedida": "un",
+            "aprovado": true
+        }
+    ]
+}

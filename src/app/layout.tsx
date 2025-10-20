@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+// 1. Importe o componente Header aqui
+import Header from "@/components/Header"; 
+
 import "./globals.css";
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+import 'primeflex/primeflex.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +35,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* 2. Coloque o componente Header antes de 'children' */}
+        <Header /> 
+        
+        {/* 'children' é onde o conteúdo específico da página (home, admin) será renderizado */}
         {children}
       </body>
     </html>
