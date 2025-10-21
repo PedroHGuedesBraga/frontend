@@ -1,5 +1,4 @@
-// src/components/tables/ItensDataTable.tsx
-
+// src/components/cards/ItemCard.tsx
 "use client";
 
 import React from 'react';
@@ -8,42 +7,37 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import { Card } from 'primereact/card';
-import { Item } from "@/hooks/GET/useItens"; // Importe a interface Item do seu hook
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { Item } from "@/hooks/GET/useItens"; 
 
 interface ItensDataTableProps {
   itens: Item[];
-  // Funções de Ação
-  onToggleAprovado: (id: string) => void;
+  // Funções de Ação: Recebem o objeto Item completo
+  onToggleAprovado: (item: Item) => void;
   onEdit: (item: Item) => void;
-  onDelete: (id: string) => void;
+  onDelete: (item: Item) => void; 
+  loading: boolean; // Para desabilitar botões durante as operações
 }
 
-export default function ItensDataTable({ itens, onToggleAprovado, onEdit, onDelete }: ItensDataTableProps) {
+export default function ItensDataTable({ itens, onToggleAprovado, onEdit, onDelete, loading }: ItensDataTableProps) {
 
-  // ------------------------------------
-  // TEMPLATES PARA COLUNAS
-  // ------------------------------------
-
-  // Template para formatar o preço
   const precoBodyTemplate = (item: Item) => {
-    const preco = Number(item.precoUnitario); // garante que é number
+    const preco = Number(item.precoUnitario);
     return `R$ ${preco.toFixed(2).replace('.', ',')}`;
   };
 
-
-  // Template para o status de Aprovação (botão/Tag)
   const aprovadoBodyTemplate = (item: Item) => {
     return (
       <Tag
         value={item.aprovado ? "Sim" : "Não"}
         severity={item.aprovado ? 'success' : 'warning'}
-        onClick={() => onToggleAprovado(item.id)}
-        className="cursor-pointer transition-colors duration-200"
+        // Passa o item completo e desabilita se estiver em loading
+        onClick={() => !loading && onToggleAprovado(item)} 
+        className={`cursor-pointer transition-colors duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       />
     );
   };
 
-  // Template para as Ações (Editar, Deletar)
   const actionBodyTemplate = (item: Item) => {
     return (
       <div className="flex gap-2">
@@ -52,35 +46,40 @@ export default function ItensDataTable({ itens, onToggleAprovado, onEdit, onDele
           onClick={() => onEdit(item)}
           className="p-button-sm p-button-text p-button-secondary"
           tooltip="Editar Item"
+          disabled={loading} // Desabilita durante operações
         />
         <Button
           icon="pi pi-trash"
-          onClick={() => onDelete(item.id)}
+          onClick={() => onDelete(item)} // Passa o item completo
           className="p-button-sm p-button-text p-button-danger"
           tooltip="Excluir Item"
+          disabled={loading} // Desabilita durante operações
         />
       </div>
     );
   };
 
-  // ------------------------------------
-
   return (
-    <Card title="Itens do Contrato" className="shadow-md">
+    <Card title="Itens do Contrato" className="shadow-md relative">
+      {/* Overlay de loading para a tabela */}
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10 rounded-lg">
+          <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" />
+        </div>
+      )}
       <DataTable
         value={itens}
         dataKey="id"
-        size="small" // Tabela compacta
-        paginator rows={10} // Adiciona Paginação
+        size="small" 
+        paginator rows={10} 
         emptyMessage="Nenhum item encontrado neste contrato."
-        className="p-datatable-gridlines" // Estilo com gridlines (opcional)
+        className="p-datatable-gridlines"
       >
         <Column field="nome" header="Nome" sortable style={{ width: '15%' }} />
         <Column field="descricao" header="Descrição" style={{ width: '30%' }} />
         <Column field="quantidadeItem" header="Qtd" sortable style={{ width: '8%' }} />
         <Column field="unidadeDeMedida" header="Unidade" style={{ width: '10%' }} />
 
-        {/* Colunas com Templates */}
         <Column
           header="Preço Unitário"
           body={precoBodyTemplate}
@@ -98,7 +97,7 @@ export default function ItensDataTable({ itens, onToggleAprovado, onEdit, onDele
           body={actionBodyTemplate}
           style={{ width: '15%' }}
           alignFrozen="right"
-          frozen // Mantém as ações visíveis no scroll horizontal
+          frozen
         />
       </DataTable>
     </Card>

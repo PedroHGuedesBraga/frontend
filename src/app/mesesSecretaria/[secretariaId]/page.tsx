@@ -11,6 +11,7 @@ import { Dropdown } from "primereact/dropdown";
 import MesesCard from "@/components/cards/MesesCard";
 import useMeses from "@/hooks/GET/useMeses";
 import { useAddContrato } from "@/hooks/POST/useAddContrato";
+import { ExportarContratoButton } from "@/components/buttons/ExportarContratoButton";
 
 export default function MesesSecretariaPage() {
   const params = useParams();
@@ -46,7 +47,7 @@ export default function MesesSecretariaPage() {
         status,
         aprovado: false, // sempre começa falso
         secretariaId,
-        itensQuantidade:0
+        itensQuantidade: 0
       };
 
       const novo = await addContrato(payload);
@@ -81,105 +82,111 @@ export default function MesesSecretariaPage() {
   // ======================================================
   return (
     <div className="flex flex-col min-h-screen bg-gray-100 p-5">
-      <div className="w-full max-w-6xl mx-auto">
-        {/* Cabeçalho */}
-        <div className="flex justify-content-between items-center mb-6">
-          <Button
-            icon="pi pi-arrow-left"
-            label="Voltar"
-            className="p-button-text p-button-sm text-blue-800"
-            onClick={() => router.push("/home")}
-          />
-          <h1 className="text-3xl text-black font-bold text-center flex-1">
-            {secretariaNome}
-          </h1>
-          <div></div>
-        </div>
-
-        {/* Botão Adicionar Contrato */}
-        <div className="flex justify-content-end mb-4">
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            label="Adicionar Contrato"
-            icon="pi pi-plus"
-            severity="success"
-            className="p-button-sm"
-          />
-        </div>
-
-        {/* Cards de meses */}
-        <div className="grid">
-          {meses.map((m) => (
-            <div
-              key={m.monthNumber}
-              className="col-12 sm:col-6 md:col-4 lg:col-3 mb-4"
-            >
-              <MesesCard
-                monthName={m.monthName}
-                totalCount={m.totalCount}
-                onClick={() => handleMonthClick(m.monthNumber)}
-              />
+        <div className="w-full max-w-6xl mx-auto">
+            {/* Cabeçalho */}
+            <div className="flex justify-content-between items-center mb-6">
+                <Button
+                    icon="pi pi-arrow-left"
+                    label="Voltar"
+                    className="p-button-text p-button-sm text-blue-800"
+                    onClick={() => router.push("/home")}
+                />
+                <h1 className="text-3xl text-black font-bold text-center flex-1">
+                    {secretariaNome}
+                </h1>
+                
+                {/* 💡 NOVO COMPONENTE DE EXPORTAÇÃO */}
+                {/* Exibe o botão de exportação no cabeçalho */}
+                <ExportarContratoButton
+                    secretariaId={secretariaId}
+                    secretariaNome={secretariaNome || 'Secretaria'}
+                />
             </div>
-          ))}
+
+            {/* Botão Adicionar Contrato (Ajustado para ficar alinhado à direita, abaixo do cabeçalho) */}
+            <div className="flex justify-content-end mb-4">
+                <Button
+                    onClick={() => setIsModalOpen(true)}
+                    label="Adicionar Contrato"
+                    icon="pi pi-plus"
+                    severity="success"
+                    className="p-button-sm"
+                />
+            </div>
+
+            {/* Cards de meses */}
+            <div className="grid">
+                {meses.map((m) => (
+                    <div
+                        key={m.monthNumber}
+                        className="col-12 sm:col-6 md:col-4 lg:col-3 mb-4"
+                    >
+                        <MesesCard
+                            monthName={m.monthName}
+                            totalCount={m.totalCount}
+                            onClick={() => handleMonthClick(m.monthNumber)}
+                        />
+                    </div>
+                ))}
+            </div>
         </div>
-      </div>
 
-      {/* Modal para criar contrato */}
-      <Dialog
-        header="Novo Contrato"
-        visible={isModalOpen}
-        style={{ width: "40vw" }}
-        modal
-        onHide={() => setIsModalOpen(false)}
-      >
-        <div className="flex flex-column gap-3 p-3">
-          <label htmlFor="secretaria">Secretaria</label>
-          <InputText
-            id="secretaria"
-            value={secretariaNome || ""}
-            disabled
-            className="w-full"
-          />
+        {/* Modal para criar contrato */}
+        <Dialog
+            header="Novo Contrato"
+            visible={isModalOpen}
+            style={{ width: "40vw" }}
+            modal
+            onHide={() => setIsModalOpen(false)}
+        >
+            <div className="flex flex-column gap-3 p-3">
+                <label htmlFor="secretaria">Secretaria</label>
+                <InputText
+                    id="secretaria"
+                    value={secretariaNome || ""}
+                    disabled
+                    className="w-full"
+                />
 
-          <label htmlFor="nome">Nome do Contrato</label>
-          <InputText
-            id="nome"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            placeholder="Ex: Contrato de fornecimento"
-            className="w-full"
-          />
+                <label htmlFor="nome">Nome do Contrato</label>
+                <InputText
+                    id="nome"
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    placeholder="Ex: Contrato de fornecimento"
+                    className="w-full"
+                />
 
-          <label htmlFor="data">Data</label>
-          <Calendar
-            id="data"
-            value={data}
-            onChange={(e) => setData(e.value as Date)}
-            dateFormat="dd/mm/yy"
-            placeholder="Selecione a data"
-            className="w-full"
-          />
+                <label htmlFor="data">Data</label>
+                <Calendar
+                    id="data"
+                    value={data}
+                    onChange={(e) => setData(e.value as Date)}
+                    dateFormat="dd/mm/yy"
+                    placeholder="Selecione a data"
+                    className="w-full"
+                />
 
-          <label htmlFor="status">Status</label>
-          <Dropdown
-            id="status"
-            value={status}
-            options={[
-              { label: "Andamento", value: "andamento" },
-              { label: "Urgente", value: "urgente" },
-            ]}
-            onChange={(e) => setStatus(e.value)}
-            className="w-full"
-          />
+                <label htmlFor="status">Status</label>
+                <Dropdown
+                    id="status"
+                    value={status}
+                    options={[
+                        { label: "Andamento", value: "andamento" },
+                        { label: "Urgente", value: "urgente" },
+                    ]}
+                    onChange={(e) => setStatus(e.value)}
+                    className="w-full"
+                />
 
-          <Button
-            label="Salvar Contrato"
-            icon="pi pi-check"
-            className="p-button-success mt-3"
-            onClick={handleSaveContrato}
-          />
-        </div>
-      </Dialog>
+                <Button
+                    label="Salvar Contrato"
+                    icon="pi pi-check"
+                    className="p-button-success mt-3"
+                    onClick={handleSaveContrato}
+                />
+            </div>
+        </Dialog>
     </div>
   );
 }
