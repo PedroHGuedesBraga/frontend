@@ -8,7 +8,7 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import { Card } from 'primereact/card';
-import { Item } from "@/hooks/useItens"; // Importe a interface Item do seu hook
+import { Item } from "@/hooks/GET/useItens"; // Importe a interface Item do seu hook
 
 interface ItensDataTableProps {
   itens: Item[];
@@ -26,8 +26,10 @@ export default function ItensDataTable({ itens, onToggleAprovado, onEdit, onDele
 
   // Template para formatar o preço
   const precoBodyTemplate = (item: Item) => {
-    return `R$ ${item.precoUnitario.toFixed(2).replace('.', ',')}`;
+    const preco = Number(item.precoUnitario); // garante que é number
+    return `R$ ${preco.toFixed(2).replace('.', ',')}`;
   };
+
 
   // Template para o status de Aprovação (botão/Tag)
   const aprovadoBodyTemplate = (item: Item) => {
@@ -45,14 +47,14 @@ export default function ItensDataTable({ itens, onToggleAprovado, onEdit, onDele
   const actionBodyTemplate = (item: Item) => {
     return (
       <div className="flex gap-2">
-        <Button 
-          icon="pi pi-pencil" 
+        <Button
+          icon="pi pi-pencil"
           onClick={() => onEdit(item)}
           className="p-button-sm p-button-text p-button-secondary"
           tooltip="Editar Item"
         />
-        <Button 
-          icon="pi pi-trash" 
+        <Button
+          icon="pi pi-trash"
           onClick={() => onDelete(item.id)}
           className="p-button-sm p-button-text p-button-danger"
           tooltip="Excluir Item"
@@ -60,14 +62,14 @@ export default function ItensDataTable({ itens, onToggleAprovado, onEdit, onDele
       </div>
     );
   };
-  
+
   // ------------------------------------
 
   return (
     <Card title="Itens do Contrato" className="shadow-md">
-      <DataTable 
-        value={itens} 
-        dataKey="id" 
+      <DataTable
+        value={itens}
+        dataKey="id"
         size="small" // Tabela compacta
         paginator rows={10} // Adiciona Paginação
         emptyMessage="Nenhum item encontrado neste contrato."
@@ -77,24 +79,24 @@ export default function ItensDataTable({ itens, onToggleAprovado, onEdit, onDele
         <Column field="descricao" header="Descrição" style={{ width: '30%' }} />
         <Column field="quantidadeItem" header="Qtd" sortable style={{ width: '8%' }} />
         <Column field="unidadeDeMedida" header="Unidade" style={{ width: '10%' }} />
-        
+
         {/* Colunas com Templates */}
-        <Column 
-          header="Preço Unitário" 
-          body={precoBodyTemplate} 
-          sortable 
-          style={{ width: '12%' }} 
+        <Column
+          header="Preço Unitário"
+          body={precoBodyTemplate}
+          sortable
+          style={{ width: '12%' }}
         />
-        <Column 
-          header="Aprovado" 
-          body={aprovadoBodyTemplate} 
+        <Column
+          header="Aprovado"
+          body={aprovadoBodyTemplate}
           align="center"
-          style={{ width: '10%' }} 
+          style={{ width: '10%' }}
         />
-        <Column 
-          header="Ações" 
-          body={actionBodyTemplate} 
-          style={{ width: '15%' }} 
+        <Column
+          header="Ações"
+          body={actionBodyTemplate}
+          style={{ width: '15%' }}
           alignFrozen="right"
           frozen // Mantém as ações visíveis no scroll horizontal
         />

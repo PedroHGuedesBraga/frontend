@@ -2,19 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ProgressSpinner } from 'primereact/progressspinner'; // Spinner para o loading
-import { Card } from 'primereact/card'; // Card para mensagens
-// Certifique-se de que o caminho abaixo está correto para o seu HomeCard
-import HomeCard from '@/components/cards/HomeCard'; 
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { useAddSecretaria } from '@/hooks/POST/useAddSecretaria';
+import HomeCard from '@/components/cards/HomeCard';
 
-// URL do seu backend NestJS, que você mencionou:
-const API_URL = 'http://localhost:3000/secretaria'; 
+const API_URL = 'http://localhost:3000/secretaria';
 
-// Definindo a interface para o tipo de dado que esperamos receber
 interface Secretaria {
   id: string;
   nome: string;
-  // O restante do JSON (contratos) não é necessário para o mapeamento
 }
 
 export default function HomePage() {
@@ -22,18 +22,21 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Modal states
+  const [showModal, setShowModal] = useState(false);
+  const [novaSecretaria, setNovaSecretaria] = useState('');
+
+  const { addSecretaria } = useAddSecretaria();
+
   useEffect(() => {
     const fetchSecretarias = async () => {
       try {
         const response = await axios.get<Secretaria[]>(API_URL);
-        
-        // Verifica se a resposta é um array (garantia)
         if (Array.isArray(response.data)) {
-            setSecretarias(response.data);
+          setSecretarias(response.data);
         } else {
-            setSecretarias([]);
+          setSecretarias([]);
         }
-
         setError(null);
       } catch (err) {
         console.error("Erro ao buscar secretarias:", err);
@@ -44,11 +47,27 @@ export default function HomePage() {
     };
 
     fetchSecretarias();
-  }, []); // Roda apenas uma vez, na montagem do componente
+  }, []);
 
-  // =================================================================
+  // ======================================
+  // ADICIONAR SECRETARIA
+  // ======================================
+  const handleAddSecretaria = async () => {
+    if (!novaSecretaria.trim()) return;
+
+    try {
+      const nova = await addSecretaria(novaSecretaria);
+      setSecretarias((prev) => [...prev, nova]);
+      setNovaSecretaria('');
+      setShowModal(false);
+    } catch (error) {
+      console.error("Erro ao adicionar secretaria:", error);
+    }
+  };
+
+  // ======================================
   // TELAS DE STATUS
-  // =================================================================
+  // ======================================
 
   if (loading) {
     return (
@@ -68,28 +87,24 @@ export default function HomePage() {
     );
   }
 
-  if (secretarias.length === 0) {
-    return (
-      <div className="flex justify-content-center m-5">
-        <Card title="Nenhuma Secretaria" className="shadow-4 surface-card">
-          <p>Nenhuma secretaria encontrada para exibir no momento.</p>
-        </Card>
-      </div>
-    );
-  }
-
-  // =================================================================
-  // RENDERIZAÇÃO DOS CARDS NA GRID RESPONSIVA
-  // =================================================================
+  // ======================================
+  // RENDERIZAÇÃO DOS CARDS
+  // ======================================
 
   return (
     <div className="p-5">
-      <h1 className="text-3xl font-bold mb-4 text-900">Lista de Secretarias</h1>
-      
-      {/* GRID RESPONSIVA USANDO PRIME FLEX CLASSES (col, md:col-6, lg:col-3) */}
+      <div className="flex justify-content-between align-items-center mb-4">
+        <h1 className="text-3xl font-bold text-900">Lista de Secretarias</h1>
+        <Button 
+          label="Adicionar Secretaria" 
+          icon="pi pi-plus" 
+          className="p-button-success" 
+          onClick={() => setShowModal(true)} 
+        />
+      </div>
+
       <div className="grid">
         {secretarias.map((secretaria) => (
-          // O div externo define o tamanho da coluna e o espaçamento (mb-4)
           <div key={secretaria.id} className="col-12 md:col-6 lg:col-3 mb-4">
             <HomeCard
               secretaryId={secretaria.id}
@@ -98,6 +113,32 @@ export default function HomePage() {
           </div>
         ))}
       </div>
+
+      {/* Modal para adicionar secretaria */}
+      <Dialog 
+        header="Nova Secretaria" 
+        visible={showModal} 
+        style={{ width: '30vw' }} 
+        modal 
+        onHide={() => setShowModal(false)}
+      >
+        <div className="flex flex-column gap-3 p-3">
+          <label htmlFor="nome">Nome da Secretaria</label>
+          <InputText 
+            id="nome" 
+            value={novaSecretaria} 
+            onChange={(e) => setNovaSecretaria(e.target.value)} 
+            placeholder="Digite o nome da secretaria" 
+            className="w-full"
+          />
+          <Button 
+            label="Adicionar" 
+            icon="pi pi-check" 
+            className="p-button-success mt-2" 
+            onClick={handleAddSecretaria} 
+          />
+        </div>
+      </Dialog>
     </div>
   );
 }
