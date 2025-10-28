@@ -35,13 +35,7 @@ const Header = () => {
       </Link>
       
       {/* LINK ADMIN */}
-      <Link 
-        href="/adminPage" 
-        className="text-white hover:text-blue-300 transition-colors flex items-center gap-1 p-2"
-      >
-        <i className="pi pi-user text-sm"></i>
-        <span>ADMIN</span>
-      </Link>
+      
       
       {/* BOTÃO SAIR (usamos o Button do PrimeReact para garantir o estilo) */}
       <Button
