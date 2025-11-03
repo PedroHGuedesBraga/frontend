@@ -1,121 +1,95 @@
 "use client";
 
-import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
 import { InputTextarea } from "primereact/inputtextarea";
-
-import useItens, { Item } from "@/hooks/GET/useItens";
-import ItensDataTable from "@/components/cards/ItemCard";
-import useAddItem from "@/hooks/POST/useAddItem";
-import { useUpdateContrato } from "@/hooks/PATCH/useUpdateContrato";
-
+import ItensDataTable from "@/components/cards/ItemCard"; // corrigi o import
+import useItensContrato from "@/hooks/useItensContrato";
+import { useItemActions } from "@/hooks/useItemActions";
+import { contratoService } from "@/services/contrato/contratoService";
 export default function ItensContratoPage() {
-  const params = useParams();
   const router = useRouter();
-  const contratoId = params.contratoId as string;
+  const params = useParams();
+  const contratoId = params.contratoId as string; // ✅ única fonte
+  if (!contratoId) {
+    return <p className="p-5 text-red-500">Contrato ID não fornecido.</p>;
+  }
 
-  const { contrato, itens, loading, error } = useItens(contratoId);
-  const { addItem, loading: addLoading, error: addError } = useAddItem();
-  const { updateContrato } = useUpdateContrato();
+  const { contrato, itens, loading, error, fetchItens } = useItensContrato(contratoId);
+  const [secretariaId, setSecretariaId] = useState<string | null>(null);
+  const [contratoDate, setContratoDate] = useState<Date | null>(null);
+  useEffect(() => {
+  if (contrato) {
+    setSecretariaId(contrato.secretariaId);
+    setContratoDate(new Date(contrato.data));
+  }
+}, [contrato]);
+  const {
+    isModalOpen,
+    setIsModalOpen,
+    novoNome,
+    setNovoNome,
+    novoDescricao,
+    setNovoDescricao,
+    novoQuantidade,
+    setNovoQuantidade,
+    novoPrecoUnitario,
+    setNovoPrecoUnitario,
+    novoData,
+    setNovoData,
+    novoUnidade,
+    setNovoUnidade,
+    handleSaveItem,
+    handleToggleAprovado,
+    handleEdit,
+    handleDelete,
+  } = useItemActions(contratoId, fetchItens, contrato?.itensQuantidade);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleBack = () => router.back();
 
-  // --- Estados do modal seguindo o Entity ---
-  const [novoNome, setNovoNome] = useState("");
-  const [novoDescricao, setNovoDescricao] = useState("");
-  const [novoQuantidade, setNovoQuantidade] = useState("1"); // string para aceitar decimais
-  const [novoPrecoUnitario, setNovoPrecoUnitario] = useState("0"); // string
-  const [novoData, setNovoData] = useState(
-    new Date().toISOString().substring(0, 10)
-  ); // YYYY-MM-DD
-  const [novoUnidade, setNovoUnidade] = useState("un");
+  const handleDeleteContrato = async () => {
+  if (!confirm("Tem certeza que deseja deletar este contrato?")) return;
 
-  // --- Função salvar item ---
-  const handleSaveItem = async () => {
-    if (!novoNome.trim()) {
-      alert("Preencha o nome do item.");
+  try {
+    // 1️⃣ Buscar contrato pelo ID usando o service
+    const contrato = await contratoService.getById(contratoId);
+
+    if (!contrato || !contrato.secretariaId || !contrato.data) {
+      alert("Não foi possível carregar os dados do contrato.");
       return;
     }
 
-    try {
-      // converte string para number, aceitando vírgula ou ponto
-      const quantidadeNum = Number(novoQuantidade.replace(",", "."));
-      const precoNum = Number(novoPrecoUnitario.replace(",", "."));
+    // Extrair ano e mês da data do contrato
+    const contratoDate = new Date(contrato.data);
+    const year = contratoDate.getFullYear();
+    const month = String(contratoDate.getMonth() + 1).padStart(2, "0");
 
-      const payload = {
-        nome: novoNome,
-        descricao: novoDescricao,
-        quantidadeItem: quantidadeNum,
-        precoUnitario: precoNum,
-        data: novoData,
-        unidadeDeMedida: novoUnidade,
-        contratoId,
-        aprovado:false
-      };
+    // 2️⃣ Deletar contrato usando o service
+    await contratoService.delete(contratoId);
+    alert("Contrato deletado com sucesso!");
 
-      await addItem(payload);
-
-      // Atualiza o contrato com +1 no itensQuantidade
-      const novaQtd = (contrato?.itensQuantidade || 0) + 1;
-      await updateContrato(contratoId, { itensQuantidade: novaQtd });
-
-      alert("Item adicionado com sucesso!");
-      setIsModalOpen(false);
-
-      // reload da página
-      router.refresh();
-
-      // Limpa os campos do modal
-      setNovoNome("");
-      setNovoDescricao("");
-      setNovoQuantidade("1");
-      setNovoPrecoUnitario("0");
-      setNovoData(new Date().toISOString().substring(0, 10));
-      setNovoUnidade("un");
-    } catch (err) {
-      console.error("Erro ao adicionar item:", err);
-      alert("Erro ao adicionar item. Veja o console.");
-    }
-  };
-
-  // --- Funções de ação ---
-  const handleToggleAprovado = (id: string) => {
-    console.log(`[AÇÃO] Toggle Aprovação do Item: ${id}`);
-  };
-
-  const handleEdit = (item: Item) => {
-    console.log("[AÇÃO] Editar Item:", item.id);
-  };
-
-  const handleDelete = (id: string) => {
-    const confirmDelete = window.confirm(
-      `Tem certeza que deseja deletar o item ${id}?`
+    // 3️⃣ Redirecionar para a lista de contratos da secretaria com ano/mês
+    router.push(
+      `/contratosSecretaria/${contrato.secretariaId}?year=${year}&month=${month}`
     );
-    if (confirmDelete) {
-      console.log("[AÇÃO] Deletar Item:", id);
-    }
-  };
+  } catch (err: any) {
+    console.error(err);
+    alert(err.message || "Erro ao deletar contrato");
+  }
+};
 
-  const handleBack = () => {
-    if (contrato?.secretaria?.id) {
-      router.push(`/mesesSecretaria/${contrato.secretaria.id}`);
-    } else {
-      router.back();
-    }
-  };
 
-  // --- UI Condicional ---
   if (loading)
     return (
-      <div className="flex justify-content-center align-items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-screen">
         <ProgressSpinner />
       </div>
     );
+
   if (error) return <p className="text-red-500 p-5">Erro: {error}</p>;
   if (!contrato) return <p className="p-5">Contrato não encontrado</p>;
 
@@ -123,14 +97,14 @@ export default function ItensContratoPage() {
     <div className="flex flex-col min-h-screen bg-gray-100 p-5">
       <div className="w-full max-w-6xl mx-auto">
         {/* CABEÇALHO */}
-        <div className="flex justify-content-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6">
           <Button
             icon="pi pi-arrow-left"
             label="Voltar"
             className="p-button-text p-button-sm text-blue-800"
             onClick={handleBack}
           />
-          <h1 className="text-3xl text-black font-bold text-center flex-1">
+          <h1 className="text-3xl font-bold text-center flex-1">
             Itens do Contrato: {contrato.nome}
           </h1>
           <Button
@@ -139,6 +113,13 @@ export default function ItensContratoPage() {
             severity="success"
             className="p-button-sm"
             onClick={() => setIsModalOpen(true)}
+          />
+          <Button
+            label="Deletar Contrato"
+            icon="pi pi-trash"
+            severity="danger"
+            className="p-button-sm"
+            onClick={handleDeleteContrato}
           />
         </div>
 
@@ -159,7 +140,7 @@ export default function ItensContratoPage() {
         modal
         onHide={() => setIsModalOpen(false)}
       >
-        <div className="flex flex-column gap-3 p-3">
+        <div className="flex flex-col gap-3 p-3">
           <label>Nome do Item</label>
           <InputText
             value={novoNome}
@@ -205,16 +186,13 @@ export default function ItensContratoPage() {
             onChange={(e) => setNovoUnidade(e.target.value)}
             className="w-full"
           />
-  
+
           <Button
-            label={addLoading ? "Salvando..." : "Salvar Item"}
+            label="Salvar Item"
             icon="pi pi-check"
             className="p-button-success mt-3"
             onClick={handleSaveItem}
-            disabled={addLoading}
           />
-
-          {addError && <p className="text-red-500 mt-2">{addError}</p>}
         </div>
       </Dialog>
     </div>

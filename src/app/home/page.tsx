@@ -1,21 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import { Card } from 'primereact/card';
-import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { useAddSecretaria } from '@/hooks/POST/useAddSecretaria';
-import HomeCard from '@/components/cards/HomeCard';
+import React, { useState, useEffect } from "react";
+import { ProgressSpinner } from "primereact/progressspinner";
+import { Card } from "primereact/card";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
 
-const API_URL = 'http://localhost:3000/secretaria';
-
-interface Secretaria {
-  id: string;
-  nome: string;
-}
+import { secretariaService } from "@/services/secretaria/secretariaService";
+import { Secretaria } from "@/types/secretaria";
+import HomeCard from "@/components/cards/HomeCard";
 
 export default function HomePage() {
   const [secretarias, setSecretarias] = useState<Secretaria[]>([]);
@@ -24,23 +18,20 @@ export default function HomePage() {
 
   // Modal states
   const [showModal, setShowModal] = useState(false);
-  const [novaSecretaria, setNovaSecretaria] = useState('');
+  const [novaSecretaria, setNovaSecretaria] = useState("");
 
-  const { addSecretaria } = useAddSecretaria();
-
+  // ======================================
+  // FETCH SECRETARIAS
+  // ======================================
   useEffect(() => {
     const fetchSecretarias = async () => {
       try {
-        const response = await axios.get<Secretaria[]>(API_URL);
-        if (Array.isArray(response.data)) {
-          setSecretarias(response.data);
-        } else {
-          setSecretarias([]);
-        }
+        const data = await secretariaService.getAll();
+        setSecretarias(data);
         setError(null);
       } catch (err) {
         console.error("Erro ao buscar secretarias:", err);
-        setError("Não foi possível carregar os dados. Verifique se o servidor NestJS está rodando em http://localhost:3000.");
+        setError("Não foi possível carregar as secretarias. Verifique o servidor.");
       } finally {
         setLoading(false);
       }
@@ -56,9 +47,9 @@ export default function HomePage() {
     if (!novaSecretaria.trim()) return;
 
     try {
-      const nova = await addSecretaria(novaSecretaria);
+      const nova = await secretariaService.create({ nome: novaSecretaria });
       setSecretarias((prev) => [...prev, nova]);
-      setNovaSecretaria('');
+      setNovaSecretaria("");
       setShowModal(false);
     } catch (error) {
       console.error("Erro ao adicionar secretaria:", error);
@@ -95,11 +86,11 @@ export default function HomePage() {
     <div className="p-5">
       <div className="flex justify-content-between align-items-center mb-4">
         <h1 className="text-3xl font-bold text-900">Lista de Secretarias</h1>
-        <Button 
-          label="Adicionar Secretaria" 
-          icon="pi pi-plus" 
-          className="p-button-success" 
-          onClick={() => setShowModal(true)} 
+        <Button
+          label="Adicionar Secretaria"
+          icon="pi pi-plus"
+          className="p-button-success"
+          onClick={() => setShowModal(true)}
         />
       </div>
 
@@ -115,27 +106,27 @@ export default function HomePage() {
       </div>
 
       {/* Modal para adicionar secretaria */}
-      <Dialog 
-        header="Nova Secretaria" 
-        visible={showModal} 
-        style={{ width: '30vw' }} 
-        modal 
+      <Dialog
+        header="Nova Secretaria"
+        visible={showModal}
+        style={{ width: "30vw" }}
+        modal
         onHide={() => setShowModal(false)}
       >
         <div className="flex flex-column gap-3 p-3">
           <label htmlFor="nome">Nome da Secretaria</label>
-          <InputText 
-            id="nome" 
-            value={novaSecretaria} 
-            onChange={(e) => setNovaSecretaria(e.target.value)} 
-            placeholder="Digite o nome da secretaria" 
+          <InputText
+            id="nome"
+            value={novaSecretaria}
+            onChange={(e) => setNovaSecretaria(e.target.value)}
+            placeholder="Digite o nome da secretaria"
             className="w-full"
           />
-          <Button 
-            label="Adicionar" 
-            icon="pi pi-check" 
-            className="p-button-success mt-2" 
-            onClick={handleAddSecretaria} 
+          <Button
+            label="Adicionar"
+            icon="pi pi-check"
+            className="p-button-success mt-2"
+            onClick={handleAddSecretaria}
           />
         </div>
       </Dialog>
